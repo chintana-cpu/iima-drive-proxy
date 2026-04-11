@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIMA Ventures — Portfolio Dashboard</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:#070d18;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
+  a{color:inherit;text-decoration:none}
+
+  /* Header */
+  .header{padding:14px 24px;border-bottom:1px solid #0f1e35;background:#080e1c;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+  .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+  .header-title{font-weight:700;font-size:14px}
+  .header-sub{font-size:11px;color:#4b6a8a;margin-top:1px}
+  .header-count{margin-left:auto;font-size:11px;color:#334155;background:#0a1628;padding:4px 10px;border-radius:12px;border:1px solid #1a3050}
+
+  /* Layout */
+  .layout{display:flex;flex:1;overflow:hidden;height:calc(100vh - 57px)}
+
+  /* Left — Company list */
+  .sidebar{width:300px;flex-shrink:0;border-right:1px solid #0f1e35;display:flex;flex-direction:column;background:#080e1c}
+  .search-wrap{padding:12px}
+  .search-input{width:100%;padding:9px 14px;border-radius:10px;background:#0c1829;border:1px solid #0f1e35;color:#e2e8f0;font-size:12px;outline:none}
+  .search-input:focus{border-color:#2563eb}
+  .search-input::placeholder{color:#1e3a5f}
+  .company-list{overflow-y:auto;flex:1}
+  .company-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #0a1628;transition:background 0.15s;display:flex;flex-direction:column;gap:3px}
+  .company-item:hover{background:#0c1829}
+  .company-item.active{background:#0f1f38;border-left:2px solid #2563eb}
+  .company-name{font-size:13px;font-weight:500;color:#e2e8f0}
+  .company-domain{font-size:11px;color:#334155}
+
+  /* Main — Document viewer */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .main-header{padding:16px 24px;border-bottom:1px solid #0f1e35;background:#080e1c;display:flex;align-items:center;gap:12px}
+  .main-company{font-weight:700;font-size:15px}
+  .main-domain{font-size:12px;color:#4b6a8a}
+  .main-body{display:flex;flex:1;overflow:hidden}
+
+  /* Doc list */
+  .doc-list{width:260px;flex-shrink:0;border-right:1px solid #0f1e35;overflow-y:auto;background:#080e1c}
+  .doc-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #0a1628;font-size:12px;color:#94a3b8;transition:background 0.15s;line-height:1.4}
+  .doc-item:hover{background:#0c1829;color:#e2e8f0}
+  .doc-item.active{background:#0f1f38;color:#60a5fa;border-left:2px solid #2563eb}
+
+  /* Doc reader */
+  .doc-reader{flex:1;overflow-y:auto;padding:24px;background:#070d18}
+  .doc-title{font-size:13px;font-weight:600;color:#60a5fa;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #0f1e35}
+  .doc-content{font-size:12px;color:#94a3b8;line-height:1.8;white-space:pre-wrap;font-family:'SF Mono',monospace}
+
+  /* Empty states */
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:#334155;gap:8px}
+  .empty-icon{font-size:32px}
+  .empty-text{font-size:13px}
+
+  /* Loading */
+  .loading{display:flex;align-items:center;gap:8px;color:#3b82f6;font-size:12px;padding:16px 24px}
+  .dot{width:5px;height:5px;border-radius:50%;background:#3b82f6;animation:dot 1.2s ease-in-out infinite}
+  .dot:nth-child(2){animation-delay:0.2s}
+  .dot:nth-child(3){animation-delay:0.4s}
+  @keyframes dot{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.3)}}
+
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-track{background:#070d18}
+  ::-webkit-scrollbar-thumb{background:#0f1e35;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🏦</div>
+  <div>
+    <div class="header-title">IIMA Ventures — Portfolio Dashboard</div>
+    <div class="header-sub">Affinity CRM · Google Drive</div>
+  </div>
+  <div class="header-count" id="count">Loading…</div>
+</div>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="search-wrap">
+      <input class="search-input" id="search" placeholder="Search companies…" oninput="filterCompanies()" />
+    </div>
+    <div class="company-list" id="companyList">
+      <div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> Loading portfolio…</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main" id="main">
+    <div class="empty">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-text">Select a company to view documents</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allCompanies = [];
+  let activeCompany = null;
+  let activeDoc = null;
+
+  // Load company list
+  async function loadCompanies() {
+    try {
+      const r    = await fetch('/api/affinity');
+      const data = await r.json();
+      allCompanies = data.companies || [];
+      document.getElementById('count').textContent = allCompanies.length + ' companies';
+      renderCompanies(allCompanies);
+    } catch (e) {
+      document.getElementById('companyList').innerHTML = `<div style="padding:16px;color:#ef4444;font-size:12px">Failed to load: ${e.message}</div>`;
+    }
+  }
+
+  function renderCompanies(list) {
+    const el = document.getElementById('companyList');
+    if (!list.length) { el.innerHTML = '<div style="padding:16px;color:#334155;font-size:12px">No companies found</div>'; return; }
+    el.innerHTML = list.map(c => `
+      <div class="company-item ${activeCompany?.id === c.id ? 'active' : ''}" onclick="selectCompany(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+        <div class="company-name">${c.name}</div>
+        <div class="company-domain">${c.domain || '—'}</div>
+      </div>
+    `).join('');
+  }
+
+  function filterCompanies() {
+    const q = document.getElementById('search').value.toLowerCase();
+    renderCompanies(q ? allCompanies.filter(c => c.name.toLowerCase().includes(q) || (c.domain||'').toLowerCase().includes(q)) : allCompanies);
+  }
+
+  async function selectCompany(company) {
+    activeCompany = company;
+    activeDoc = null;
+    filterCompanies(); // re-render to show active state
+
+    const main = document.getElementById('main');
+    main.innerHTML = `
+      <div class="main-header">
+        <div>
+          <div class="main-company">${company.name}</div>
+          <div class="main-domain">${company.domain || 'No domain'}</div>
+        </div>
+      </div>
+      <div class="main-body">
+        <div class="doc-list" id="docList">
+          <div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        </div>
+        <div class="doc-reader" id="docReader">
+          <div class="empty"><div class="empty-icon">📄</div><div class="empty-text">Select a document</div></div>
+        </div>
+      </div>
+    `;
+
+    loadDocList(company.name);
+  }
+
+  async function loadDocList(companyName) {
+    try {
+      const r    = await fetch(`/api/docs?company=${encodeURIComponent(companyName)}&list_only=true`);
+      const data = await r.json();
+      const docs = data.all_docs || [];
+      const el   = document.getElementById('docList');
+
+      if (!docs.length) { el.innerHTML = '<div style="padding:16px;color:#334155;font-size:12px">No documents found</div>'; return; }
+
+      el.innerHTML = docs.map((doc, i) => `
+        <div class="doc-item" id="docItem${i}" onclick="loadDoc('${companyName.replace(/'/g,"\\'")}', '${doc.replace(/'/g,"\\'")}', ${i})">
+          ${doc.replace(' (Readable)', '')}
+        </div>
+      `).join('');
+    } catch (e) {
+      document.getElementById('docList').innerHTML = `<div style="padding:16px;color:#ef4444;font-size:12px">Error: ${e.message}</div>`;
+    }
+  }
+
+  async function loadDoc(companyName, docName, idx) {
+    // Highlight active doc
+    document.querySelectorAll('.doc-item').forEach(el => el.classList.remove('active'));
+    const activeEl = document.getElementById('docItem' + idx);
+    if (activeEl) activeEl.classList.add('active');
+
+    const reader = document.getElementById('docReader');
+    reader.innerHTML = '<div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> Reading document…</div>';
+
+    try {
+      const r    = await fetch(`/api/docs?company=${encodeURIComponent(companyName)}&query=${encodeURIComponent(docName)}`);
+      const data = await r.json();
+
+      reader.innerHTML = `
+        <div class="doc-title">📄 ${data.document || docName}</div>
+        <div class="doc-content">${escapeHtml(data.content || 'No content available')}</div>
+      `;
+    } catch (e) {
+      reader.innerHTML = `<div style="color:#ef4444;font-size:12px;padding:16px">Error: ${e.message}</div>`;
+    }
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  loadCompanies();
+</script>
+</body>
+</html>
