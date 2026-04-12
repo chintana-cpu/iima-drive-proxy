@@ -234,7 +234,7 @@ async function send() {
   if (activeSources.has('affinity') && company) {
     setThinking(`Fetching CRM data for ${company.name}`);
     try {
-      const r = await fetch(`${VERCEL}/api/fields?entity_id=${company.id}`);
+      const r = await fetch(`${VERCEL}/api/fields?entity_id=${company.list_entry_id}`);
       const d = await r.json();
       const fields = d.fields || {};
       if (Object.keys(fields).length) {
