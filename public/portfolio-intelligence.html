@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
   --bg: #080808;
   --surface: #111;
@@ -22,297 +21,60 @@
   --sans: 'Geist', system-ui, sans-serif;
   --mono: 'Geist Mono', monospace;
 }
-
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); }
-
-#shell {
-  max-width: 780px;
-  margin: 0 auto;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 0 1.25rem;
-}
-
-/* Header */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 0 0.875rem;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.logo-mark {
-  width: 28px; height: 28px;
-  background: var(--accent);
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  color: #080808;
-  letter-spacing: -0.02em;
-}
-.logo-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  letter-spacing: -0.01em;
-}
-.logo-sub {
-  font-size: 12px;
-  color: var(--muted2);
-  font-weight: 300;
-  margin-left: 2px;
-}
-
-/* Source toggles */
-#sources-bar {
-  display: flex;
-  gap: 6px;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.src-label {
-  font-size: 11px;
-  color: var(--muted);
-  font-family: var(--mono);
-  margin-right: 4px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.toggle {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid var(--border2);
-  background: var(--surface);
-  font-size: 12px;
-  color: var(--muted2);
-  font-family: var(--mono);
-  cursor: pointer;
-  transition: all 0.15s;
-  user-select: none;
-  letter-spacing: 0.02em;
-}
-.toggle:hover { border-color: var(--border2); color: var(--text); }
-.toggle.on {
-  background: var(--surface2);
-  border-color: var(--accent2);
-  color: var(--accent);
-}
-.toggle .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: background 0.15s;
-}
+#shell { max-width: 780px; margin: 0 auto; height: 100vh; display: flex; flex-direction: column; padding: 0 1.25rem; }
+header { display: flex; align-items: center; padding: 1rem 0 0.875rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark { width: 28px; height: 28px; background: var(--accent); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 500; color: #080808; }
+.logo-text { font-size: 13px; font-weight: 500; color: var(--text); }
+.logo-sub { font-size: 12px; color: var(--muted2); font-weight: 300; margin-left: 2px; }
+#sources-bar { display: flex; gap: 6px; padding: 0.75rem 0; border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; align-items: center; }
+.src-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-right: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
+.toggle { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border2); background: var(--surface); font-size: 12px; color: var(--muted2); font-family: var(--mono); cursor: pointer; transition: all 0.15s; user-select: none; }
+.toggle.on { background: var(--surface2); border-color: var(--accent2); color: var(--accent); }
+.toggle .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background 0.15s; }
 .toggle.on .dot { background: var(--accent); }
-
-/* Feed */
-#feed {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.25rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border2) transparent;
-}
-
-.welcome {
-  padding: 0.5rem 0;
-}
-.welcome-head {
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 6px;
-  letter-spacing: -0.02em;
-}
-.welcome-sub {
-  font-size: 13px;
-  color: var(--muted2);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-  font-weight: 300;
-}
+#feed { flex: 1; overflow-y: auto; padding: 1.25rem 0; display: flex; flex-direction: column; gap: 1.5rem; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+.welcome { padding: 0.5rem 0; }
+.welcome-head { font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 6px; letter-spacing: -0.02em; }
+.welcome-sub { font-size: 13px; color: var(--muted2); line-height: 1.6; margin-bottom: 1rem; font-weight: 300; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip {
-  font-size: 12px;
-  padding: 5px 12px;
-  border: 1px solid var(--border2);
-  border-radius: 20px;
-  background: var(--surface);
-  color: var(--muted2);
-  cursor: pointer;
-  font-family: var(--mono);
-  transition: all 0.12s;
-}
+.chip { font-size: 12px; padding: 5px 12px; border: 1px solid var(--border2); border-radius: 20px; background: var(--surface); color: var(--muted2); cursor: pointer; font-family: var(--mono); transition: all 0.12s; }
 .chip:hover { color: var(--text); border-color: #444; }
-
 .msg { display: flex; flex-direction: column; gap: 5px; }
-
-.msg-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+.msg-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .msg.user .msg-label { color: var(--accent2); text-align: right; }
-
-.msg-body {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--text);
-}
-
-.msg.user .msg-body {
-  align-self: flex-end;
-  background: var(--surface2);
-  border: 1px solid var(--border2);
-  border-radius: 12px 2px 12px 12px;
-  padding: 10px 14px;
-  max-width: 84%;
-  color: #ccc;
-}
-
+.msg-body { font-size: 14px; line-height: 1.75; color: var(--text); }
+.msg.user .msg-body { align-self: flex-end; background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px 2px 12px 12px; padding: 10px 14px; max-width: 84%; color: #ccc; }
 .msg.bot .msg-body strong { color: var(--accent); font-weight: 500; }
-.msg.bot .msg-body code {
-  font-family: var(--mono);
-  font-size: 12px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  padding: 1px 5px;
-  border-radius: 3px;
-  color: #90b8e8;
-}
-
-.src-used {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.src-badge {
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
+.msg.bot .msg-body code { font-family: var(--mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; color: #90b8e8; }
+.src-used { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.src-badge { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
 .src-badge.affinity { background: #1a1f0a; color: #8ab830; border: 1px solid #2a3010; }
 .src-badge.drive    { background: #0a1220; color: #6090d0; border: 1px solid #102030; }
 .src-badge.gmail    { background: #200a0a; color: #d06060; border: 1px solid #301010; }
 .src-badge.slack    { background: #1a0a1f; color: #a060d0; border: 1px solid #280f30; }
 .src-badge.web      { background: #0a1a1a; color: #40a8a8; border: 1px solid #0f2828; }
-
-.thinking-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--muted2);
-  font-family: var(--mono);
-}
-.dots span {
-  display: inline-block;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--muted);
-  animation: pulse 1.2s infinite;
-  margin: 0 1px;
-}
+.thinking-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted2); font-family: var(--mono); }
+.dots span { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--muted); animation: pulse 1.2s infinite; margin: 0 1px; }
 .dots span:nth-child(2) { animation-delay: 0.2s; }
 .dots span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes pulse { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
-
-.err-box {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: #ff6060;
-  background: #1a0808;
-  border: 1px solid #3a1010;
-  border-radius: 6px;
-  padding: 10px 14px;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-/* Input */
-#input-area {
-  flex-shrink: 0;
-  padding: 0.875rem 0 1.25rem;
-  border-top: 1px solid var(--border);
-}
+.err-box { font-family: var(--mono); font-size: 12px; color: #ff6060; background: #1a0808; border: 1px solid #3a1010; border-radius: 6px; padding: 10px 14px; white-space: pre-wrap; word-break: break-all; }
+#input-area { flex-shrink: 0; padding: 0.875rem 0 1.25rem; border-top: 1px solid var(--border); }
 #input-row { display: flex; gap: 8px; align-items: flex-end; }
-
-#msg-input {
-  flex: 1;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 14px;
-  padding: 10px 14px;
-  resize: none;
-  outline: none;
-  min-height: 42px;
-  max-height: 130px;
-  line-height: 1.55;
-  transition: border-color 0.15s;
-}
+#msg-input { flex: 1; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: var(--sans); font-size: 14px; padding: 10px 14px; resize: none; outline: none; min-height: 42px; max-height: 130px; line-height: 1.55; transition: border-color 0.15s; }
 #msg-input:focus { border-color: #3a3a3a; }
 #msg-input::placeholder { color: var(--muted); }
 #msg-input:disabled { opacity: 0.4; }
-
-#send-btn {
-  height: 42px;
-  padding: 0 18px;
-  background: var(--accent);
-  color: #080808;
-  border: none;
-  border-radius: 8px;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  white-space: nowrap;
-}
+#send-btn { height: 42px; padding: 0 18px; background: var(--accent); color: #080808; border: none; border-radius: 8px; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; }
 #send-btn:hover { opacity: 0.85; }
 #send-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-
-#hint {
-  margin-top: 5px;
-  font-size: 11px;
-  color: var(--muted);
-  font-family: var(--mono);
-}
+#hint { margin-top: 5px; font-size: 11px; color: var(--muted); font-family: var(--mono); }
 </style>
 </head>
 <body>
 <div id="shell">
-
   <header>
     <div class="logo">
       <div class="logo-mark">IV</div>
@@ -337,10 +99,10 @@ header {
       <div class="welcome-head">What do you want to know?</div>
       <div class="welcome-sub">Toggle sources above. Ask about any portfolio company — stake, IRR, emails, Slack threads, valuations, news.</div>
       <div class="chips">
-        <span class="chip" onclick="prefill('What is CIIE\'s current stake in Ergon Labs? Check CRM and latest transaction docs.')">stake in Ergon Labs</span>
-        <span class="chip" onclick="prefill('Show IRR and multiplier for all exited companies in the portfolio.')">IRR & exits</span>
-        <span class="chip" onclick="prefill('Any recent emails or Slack messages about fundraising from portfolio companies?')">recent fundraising comms</span>
-        <span class="chip" onclick="prefill('What is the latest valuation and post-money for a company?')">latest valuation</span>
+        <span class="chip" onclick="prefill('What is CIIEs current stake in Ergon Labs? Check CRM and latest SSA/SHA documents.')">stake in Ergon Labs</span>
+        <span class="chip" onclick="prefill('Show IRR and multiplier for all exited companies.')">IRR & exits</span>
+        <span class="chip" onclick="prefill('Any recent emails or Slack messages about fundraising from portfolio companies?')">fundraising comms</span>
+        <span class="chip" onclick="prefill('What is the latest valuation and post-money for Ergon Labs?')">latest valuation</span>
         <span class="chip" onclick="prefill('Summarise the latest news about any portfolio company.')">portfolio news</span>
       </div>
     </div>
@@ -353,8 +115,8 @@ header {
     </div>
     <div id="hint">Enter to send · Shift+Enter for new line</div>
   </div>
-
 </div>
+
 <script>
 const VERCEL = 'https://iima-drive-proxy.vercel.app';
 const MCP_GMAIL = 'https://gmail.mcp.claude.com/mcp';
@@ -368,12 +130,10 @@ const feed = document.getElementById('feed');
 const msgInput = document.getElementById('msg-input');
 const sendBtn = document.getElementById('send-btn');
 
-// Load companies
 fetch(`${VERCEL}/api/affinity`).then(r => r.json()).then(d => {
   companies = Array.isArray(d) ? d : (d.organizations || d.companies || []);
 }).catch(() => {});
 
-// Source toggles
 document.querySelectorAll('.toggle').forEach(el => {
   el.addEventListener('click', () => {
     const s = el.dataset.src;
@@ -382,18 +142,14 @@ document.querySelectorAll('.toggle').forEach(el => {
   });
 });
 
-// Input auto-resize
 msgInput.addEventListener('input', () => {
   msgInput.style.height = 'auto';
   msgInput.style.height = Math.min(msgInput.scrollHeight, 130) + 'px';
 });
-msgInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-});
+msgInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
 sendBtn.addEventListener('click', send);
 
 function prefill(t) { msgInput.value = t; msgInput.focus(); }
-
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function md(s) {
   return esc(s)
@@ -403,7 +159,7 @@ function md(s) {
     .replace(/\n/g, '<br>');
 }
 
-function addMsg(role, html, meta) {
+function addMsg(role, html, sources) {
   const wrap = document.createElement('div');
   wrap.className = `msg ${role}`;
   const lbl = document.createElement('div');
@@ -414,11 +170,11 @@ function addMsg(role, html, meta) {
   body.innerHTML = html;
   wrap.appendChild(lbl);
   wrap.appendChild(body);
-  if (meta) {
-    const m = document.createElement('div');
-    m.className = 'src-used';
-    m.innerHTML = meta;
-    wrap.appendChild(m);
+  if (sources) {
+    const s = document.createElement('div');
+    s.className = 'src-used';
+    s.innerHTML = sources;
+    wrap.appendChild(s);
   }
   feed.appendChild(wrap);
   feed.scrollTop = feed.scrollHeight;
@@ -441,9 +197,7 @@ function setThinking(t) {
   feed.appendChild(d);
   feed.scrollTop = feed.scrollHeight;
 }
-function removeThinking() {
-  const el = document.getElementById('thinking'); if (el) el.remove();
-}
+function removeThinking() { const el = document.getElementById('thinking'); if (el) el.remove(); }
 
 function findCompany(q) {
   const ql = q.toLowerCase();
@@ -462,7 +216,6 @@ async function send() {
   const text = msgInput.value.trim();
   if (!text) return;
 
-  // Remove welcome
   const w = feed.querySelector('.welcome');
   if (w) w.remove();
 
@@ -478,7 +231,6 @@ async function send() {
   let crmContext = '', docContext = '';
   let usedSources = [];
 
-  // Fetch Affinity
   if (activeSources.has('affinity') && company) {
     setThinking(`Fetching CRM data for ${company.name}`);
     try {
@@ -486,14 +238,12 @@ async function send() {
       const d = await r.json();
       const fields = d.fields || {};
       if (Object.keys(fields).length) {
-        crmContext = `AFFINITY CRM — ${company.name}:\n` +
-          Object.entries(fields).map(([k,v]) => `  ${k}: ${v}`).join('\n');
+        crmContext = `AFFINITY CRM — ${company.name}:\n` + Object.entries(fields).map(([k,v]) => `  ${k}: ${v}`).join('\n');
         usedSources.push('<span class="src-badge affinity">Affinity CRM</span>');
       }
     } catch(e) {}
   }
 
-  // Fetch Drive docs
   if (activeSources.has('drive') && company) {
     setThinking(`Fetching Drive docs for ${company.name}`);
     try {
@@ -501,11 +251,11 @@ async function send() {
       const d = await r.json();
       const docs = d.all_docs || [];
       if (docs.length) {
-        docContext = `DRIVE DOCUMENTS — ${company.name} (${docs.length} docs):\n` +
+        docContext = `DRIVE DOCUMENTS — ${company.name} (${docs.length} docs found):\n` +
           docs.slice(0, 4).map(doc =>
             `  [${doc.title || doc.name}]\n  ${(doc.content || doc.text || '').slice(0, 15000)}`
           ).join('\n\n');
-        usedSources.push('<span class="src-badge drive">Drive</span>');
+        usedSources.push(`<span class="src-badge drive">Drive (${docs.length})</span>`);
       }
     } catch(e) {}
   }
@@ -513,19 +263,13 @@ async function send() {
   removeThinking();
   setThinking('Querying intelligence sources');
 
-  // Build MCP servers list
   const mcpServers = [];
-  if (activeSources.has('gmail'))
-    mcpServers.push({ type: 'url', url: MCP_GMAIL, name: 'gmail' });
-  if (activeSources.has('slack'))
-    mcpServers.push({ type: 'url', url: MCP_SLACK, name: 'slack' });
+  if (activeSources.has('gmail')) mcpServers.push({ type: 'url', url: MCP_GMAIL, name: 'gmail' });
+  if (activeSources.has('slack')) mcpServers.push({ type: 'url', url: MCP_SLACK, name: 'slack' });
 
-  // Build tools list
   const tools = [];
-  if (activeSources.has('web'))
-    tools.push({ type: 'web_search_20250305', name: 'web_search' });
+  if (activeSources.has('web')) tools.push({ type: 'web_search_20250305', name: 'web_search' });
 
-  // Build context block
   const contextParts = [];
   if (crmContext) contextParts.push(crmContext);
   if (docContext) contextParts.push(docContext);
@@ -533,39 +277,38 @@ async function send() {
     ? `\n\nDATA FROM INTERNAL SYSTEMS:\n${'─'.repeat(40)}\n${contextParts.join('\n\n')}\n${'─'.repeat(40)}`
     : '';
 
-  const systemPrompt = `You are the Portfolio Intelligence Assistant for IIMA Ventures, an early-stage venture fund in India managing ~352 portfolio companies.
+  const system = `You are the Portfolio Intelligence Assistant for IIMA Ventures, an early-stage venture fund in India managing ~352 portfolio companies.
 
 You have access to multiple live data sources:
-- Affinity CRM: structured deal data (stake, IRR, valuation, investment date, etc.)
-- Drive Documents: transaction docs, SSAs, board notes, update reports
-- Gmail: portfolio company emails, founder communications, term sheets
-- Slack: internal team conversations, deal notes, portfolio updates
+- Affinity CRM: structured deal data (stake, IRR, valuation, investment date, owners)
+- Drive Documents: SSAs, SHAs, board notes, update reports, transaction docs
+- Gmail: portfolio company emails, founder communications
+- Slack: internal team conversations, deal notes
 - Web Search: news, public filings, market data
 
 When answering:
 - Be concise and analytical
 - Bold key metrics and numbers
-- If you find conflicting data across sources, flag it explicitly
-- Always cite which source the data came from
-- If a source has no relevant data, skip it silently unless the user asked specifically`;
+- If data conflicts across sources, flag it explicitly
+- Cite which source each data point came from
+- For stake questions, always check both CRM and transaction documents`;
 
-  const userContent = text + contextBlock;
   const messages = [
     ...history.slice(-8, -1),
-    { role: 'user', content: userContent }
+    { role: 'user', content: text + contextBlock }
   ];
 
   try {
     const body = {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
-      system: systemPrompt,
+      system,
       messages
     };
     if (mcpServers.length) body.mcp_servers = mcpServers;
     if (tools.length) body.tools = tools;
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://iima-drive-proxy.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -575,33 +318,31 @@ When answering:
     let data;
     try { data = JSON.parse(raw); } catch(e) {
       removeThinking();
-      addErr(`Parse error:\n${raw.slice(0, 500)}`);
+      addErr(`Parse error:\n${raw.slice(0, 600)}`);
       reset(); return;
     }
 
     if (!resp.ok || data.error) {
       removeThinking();
-      addErr(`API ${resp.status}: ${JSON.stringify(data.error || data, null, 2).slice(0, 500)}`);
+      addErr(`API ${resp.status}: ${JSON.stringify(data.error || data, null, 2).slice(0, 600)}`);
       reset(); return;
     }
 
-    // Extract answer + detect which MCP sources were used
     const textBlocks = data.content?.filter(b => b.type === 'text') || [];
     const answer = textBlocks.map(b => b.text).join('\n') || 'No response.';
 
     const toolUses = data.content?.filter(b => b.type === 'mcp_tool_use') || [];
     for (const t of toolUses) {
-      if (t.name?.includes('gmail')) usedSources.push('<span class="src-badge gmail">Gmail</span>');
-      if (t.name?.includes('slack')) usedSources.push('<span class="src-badge slack">Slack</span>');
+      if (t.name?.includes('gmail') && !usedSources.some(s => s.includes('gmail')))
+        usedSources.push('<span class="src-badge gmail">Gmail</span>');
+      if (t.name?.includes('slack') && !usedSources.some(s => s.includes('slack')))
+        usedSources.push('<span class="src-badge slack">Slack</span>');
     }
-    const webUsed = data.content?.some(b => b.type === 'tool_use' && b.name === 'web_search');
-    if (webUsed) usedSources.push('<span class="src-badge web">Web</span>');
-
-    // Dedupe badges
-    const unique = [...new Set(usedSources)];
+    if (data.content?.some(b => b.type === 'tool_use' && b.name === 'web_search'))
+      usedSources.push('<span class="src-badge web">Web</span>');
 
     removeThinking();
-    addMsg('bot', md(answer), unique.length ? unique.join('') : null);
+    addMsg('bot', md(answer), usedSources.length ? usedSources.join('') : null);
     history.push({ role: 'assistant', content: answer });
 
   } catch(e) {
