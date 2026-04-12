@@ -56,7 +56,6 @@ export default async function handler(req, res) {
     // It's just an ID — skip it for now
     continue;
   }
-}
       } else {
         val = fv.value;
       }
