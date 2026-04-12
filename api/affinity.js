@@ -9,10 +9,12 @@ export default async function handler(req, res) {
     const companies = data
       .filter(e => e.entity?.name)
       .map(e => ({
-        id:      e.entity_id,
-        name:    e.entity.name,
-        domain:  e.entity.domain  || null,
-        domains: e.entity.domains || []
+  id:            e.entity_id,
+  list_entry_id: e.id,
+  name:          e.entity.name,
+  domain:        e.entity.domain  || null,
+  domains:       e.entity.domains || []
+}))
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
