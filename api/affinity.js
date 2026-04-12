@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=3600'); // cache 1 hour
 
   try {
-    const r    = await fetch('https://affinity-api.chintana.workers.dev/lists/51696/list-entries');
+    const r = await fetch(`${WORKER}/field-values?list_entry_id=${entity_id}`);
     const data = await r.json();
 
     const companies = data
