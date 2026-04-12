@@ -249,13 +249,11 @@ async function send() {
     try {
       const r = await fetch(`${VERCEL}/api/docs?company=${encodeURIComponent(company.name)}&query=all`);
       const d = await r.json();
-      const docs = d.all_docs || [];
-      if (docs.length) {
-        docContext = `DRIVE DOCUMENTS — ${company.name} (${docs.length} docs found):\n` +
-          docs.slice(0, 4).map(doc =>
-            `  [${doc.title || doc.name}]\n  ${(doc.content || doc.text || '').slice(0, 15000)}`
-          ).join('\n\n');
-        usedSources.push(`<span class="src-badge drive">Drive (${docs.length})</span>`);
+      const docNames = d.all_docs || [];
+      const docContent = d.content || '';
+      if (docNames.length || docContent) {
+        docContext = `DRIVE DOCUMENTS — ${company.name} (${docNames.length} docs found):\nActive document: ${d.document || 'unknown'}\n\n` + docContent.slice(0, 15000);
+        usedSources.push(`<span class="src-badge drive">Drive (${docNames.length})</span>`);
       }
     } catch(e) {}
   }
