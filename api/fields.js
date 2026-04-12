@@ -23,12 +23,12 @@ export default async function handler(req, res) {
   if (!entity_id) return res.status(400).json({ error: 'Missing entity_id' });
 
   try {
-    const r    = await fetch(`${WORKER}/field-values?list_id=51696&entity_id=${entity_id}`);
+    const r    = await fetch(`${WORKER}/field-values?list_entry_id=${entity_id}`);
     const data = await r.json();
 
     const values = {};
 
-    for (const fv of (data.field_values || [])) {
+    for (const fv of (Array.isArray(data) ? data : [])) {
       const fieldDef = FIELDS[fv.field_id];
       if (!fieldDef) continue;
 
