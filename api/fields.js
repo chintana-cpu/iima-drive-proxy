@@ -46,4 +46,23 @@ export default async function handler(req, res) {
         val = new Date(fv.value).toLocaleDateString('en-IN');
       } else if (fieldDef.type === 'person') {
         if (Array.isArray(fv.value)) {
-          val = fv.value.map(p => p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null).filter(Boolean).
+          val = fv.value.map(p => p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null).filter(Boolean).join(', ');
+        } else if (typeof fv.value === 'object' && fv.value?.first_name) {
+          val = `${fv.value.first_name} ${fv.value.last_name || ''}`.trim();
+        } else {
+          continue;
+        }
+      } else {
+        val = fv.value;
+      }
+
+      if (val !== null && val !== '' && val !== undefined) {
+        values[fieldDef.name] = val;
+      }
+    }
+
+    res.json({ entity_id, fields: values });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
