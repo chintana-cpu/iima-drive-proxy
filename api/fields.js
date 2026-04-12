@@ -47,7 +47,7 @@ export default async function handler(req, res) {
         }
       } else if (fieldDef.type === 'date') {
         val = new Date(fv.value).toLocaleDateString('en-IN');
-     } else if (fieldDef.type === 'person') {
+     } else if (fieldDef.type === 'person') 
   if (Array.isArray(fv.value)) {
     val = fv.value.map(p => p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : String(p)).join(', ');
   } else if (typeof fv.value === 'object' && fv.value?.first_name) {
