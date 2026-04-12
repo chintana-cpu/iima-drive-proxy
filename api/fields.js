@@ -45,22 +45,30 @@ export default async function handler(req, res) {
       } else if (fieldDef.type === 'date') {
         val = new Date(fv.value).toLocaleDateString('en-IN');
       } else if (fieldDef.type === 'person') {
-        if (Array.isArray(fv.value)) {
-          val = fv.value.map(p => p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : null).filter(Boolean).join(', ');
-        } else if (typeof fv.value === 'object' && fv.value?.first_name) {
-          val = `${fv.value.first_name} ${fv.value.last_name || ''}`.trim();
-        } else {
-          continue;
-        }
-      } else {
-        val = fv.value;
-      }
-
-      if (val !== null && val !== '' && val !== undefined) {
-        values[fieldDef.name] = val;
+  if (Array.isArray(fv.value)) {
+    const names = [];
+    for (const p of fv.value) {
+      if (p.first_name) {
+        names.push(`${p.first_name} ${p.last_name || ''}`.trim());
+      } else if (typeof p === 'number') {
+        try {
+          const pr = await fetch(`${WORKER}/persons/${p}`);
+          const pd = await pr.json();
+          if (pd.first_name) names.push(`${pd.first_name} ${pd.last_name || ''}`.trim());
+        } catch (e) {}
       }
     }
-
+    val = names.join(', ') || null;
+  } else if (typeof fv.value === 'object' && fv.value?.first_name) {
+    val = `${fv.value.first_name} ${fv.value.last_name || ''}`.trim();
+  } else if (typeof fv.value === 'number') {
+    try {
+      const pr = await fetch(`${WORKER}/persons/${fv.value}`);
+      const pd = await pr.json();
+      if (pd.first_name) val = `${pd.first_name} ${pd.last_name || ''}`.trim();
+    } catch (e) {}
+  }
+}
     res.json({ entity_id, fields: values });
   } catch (err) {
     res.status(500).json({ error: err.message });
