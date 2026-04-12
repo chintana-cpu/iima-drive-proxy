@@ -1,6 +1,5 @@
 const WORKER = 'https://affinity-api.chintana.workers.dev';
 
-// Field IDs from IIMA Ventures Affinity list
 const FIELDS = {
   460869: { name: 'Status',                type: 'dropdown' },
   460871: { name: 'CIIE Investment (INR)', type: 'number'   },
@@ -26,29 +25,36 @@ export default async function handler(req, res) {
     const r    = await fetch(`${WORKER}/field-values?list_entry_id=${entity_id}`);
     const data = await r.json();
 
+    // Response is a plain array
+    const rows = Array.isArray(data) ? data : [];
     const values = {};
 
-    for (const fv of (Array.isArray(data) ? data : [])) {
+    for (const fv of rows) {
       const fieldDef = FIELDS[fv.field_id];
       if (!fieldDef) continue;
+      if (fv.value === null || fv.value === undefined) continue;
 
       let val = null;
 
-      if (fv.value !== null && fv.value !== undefined) {
-        if (fieldDef.type === 'dropdown') {
-          // value is an array of dropdown option objects
-          val = Array.isArray(fv.value)
-            ? fv.value.map(v => v.text || v).join(', ')
-            : (fv.value.text || fv.value);
-        } else if (fieldDef.type === 'date') {
-          val = fv.value ? new Date(fv.value).toLocaleDateString('en-IN') : null;
-        } else if (fieldDef.type === 'person') {
-          val = Array.isArray(fv.value)
-            ? fv.value.map(p => p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : p).join(', ')
-            : fv.value;
+      if (fieldDef.type === 'dropdown') {
+        // value can be object {text:...} or array of such objects
+        if (Array.isArray(fv.value)) {
+          val = fv.value.map(v => v.text || v).join(', ');
+        } else if (typeof fv.value === 'object') {
+          val = fv.value.text || JSON.stringify(fv.value);
         } else {
           val = fv.value;
         }
+      } else if (fieldDef.type === 'date') {
+        val = new Date(fv.value).toLocaleDateString('en-IN');
+      } else if (fieldDef.type === 'person') {
+        if (Array.isArray(fv.value)) {
+          val = fv.value.map(p => p.first_name ? `${p.first_name} ${p.last_name || ''}`.trim() : p).join(', ');
+        } else {
+          val = fv.value;
+        }
+      } else {
+        val = fv.value;
       }
 
       if (val !== null && val !== '' && val !== undefined) {
