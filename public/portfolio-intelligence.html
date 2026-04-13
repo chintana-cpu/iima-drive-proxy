@@ -228,10 +228,48 @@ async function send() {
   history.push({ role: 'user', content: text });
 
   const company = findCompany(text);
-  let crmContext = '', docContext = '';
+  let crmContext = '', docContext = '', portfolioContext = '';
   let usedSources = [];
 
-  if (activeSources.has('affinity') && company) {
+  const portfolioKeywords = /\b(total|all|portfolio|across|how many|count|sum|average|weighted|irr|breakdown|status|exited|written.?off|struggling|active|passive|overview|analysis|aggregate|list all|which companies)\b/i;
+  const isPortfolioWide = portfolioKeywords.test(text) && !company;
+
+  if (activeSources.has('affinity') && isPortfolioWide) {
+    setThinking('Loading full portfolio data...');
+    try {
+      const r = await fetch(`${VERCEL}/api/portfolio`);
+      const d = await r.json();
+      const companies = d.companies || [];
+      if (companies.length) {
+        let totalInvested = 0, totalPortfolioValue = 0, totalFollowOn = 0, totalExitAmount = 0;
+        const statusCount = {};
+        companies.forEach(c => {
+          const inv = parseFloat(c['CIIE Investment (INR)']) || 0;
+          const grant = parseFloat(c['CIIE Grant (INR)']) || 0;
+          totalInvested += inv + grant;
+          const stakeStr = (c['Current Stake'] || '').replace(/[^0-9.]/g, '');
+          const stake = parseFloat(stakeStr) / 100 || 0;
+          const val = parseFloat(c['Last Valuation (INR)']) || parseFloat(c['Post Money Valuation (INR)']) || 0;
+          totalPortfolioValue += stake * val;
+          totalFollowOn += parseFloat(c['Follow-On Raised (INR)']) || 0;
+          totalExitAmount += parseFloat(c['Exit Amount (INR)']) || 0;
+          const s = c['Status'] || 'Unknown';
+          statusCount[s] = (statusCount[s] || 0) + 1;
+        });
+        const formatCr = n => n >= 1e7 ? `₹${(n/1e7).toFixed(2)} Cr` : n >= 1e5 ? `₹${(n/1e5).toFixed(2)} L` : `₹${n.toFixed(0)}`;
+        portfolioContext = `FULL PORTFOLIO DATA (${companies.length} companies):\n` +
+          `Total CIIE Invested+Grants: ${formatCr(totalInvested)}\n` +
+          `Total Portfolio Value (stake x last val): ${formatCr(totalPortfolioValue)}\n` +
+          `Total Follow-On Raised: ${formatCr(totalFollowOn)}\n` +
+          `Total Exit Amount: ${formatCr(totalExitAmount)}\n\n` +
+          `STATUS BREAKDOWN:\n${Object.entries(statusCount).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`${s}: ${n}`).join('\n')}\n\n` +
+          `ALL COMPANIES:\n` +
+          companies.map(c => `${c['Company Name']}|${c['Status']}|Inv:${c['CIIE Investment (INR)']}|Grant:${c['CIIE Grant (INR)']}|Stake:${c['Current Stake']}|LastVal:${c['Last Valuation (INR)']}|IRR:${c['IRR']}|Mult:${c['Multiplier']}|Exit:${c['Exit Amount (INR)']}|FollowOn:${c['Follow-On Raised (INR)']}|Date:${(c['Investment Date']||'').slice(0,10)}`).join('\n');
+        usedSources.push(`<span class="src-badge affinity">Portfolio (${companies.length})</span>`);
+      }
+    } catch(e) {}
+
+  } else if (activeSources.has('affinity') && company) {
     setThinking(`Fetching CRM data for ${company.name}`);
     try {
       const r = await fetch(`${VERCEL}/api/fields?entity_id=${company.list_entry_id}`);
@@ -269,26 +307,34 @@ async function send() {
   if (activeSources.has('web')) tools.push({ type: 'web_search_20250305', name: 'web_search' });
 
   const contextParts = [];
+  if (portfolioContext) contextParts.push(portfolioContext);
   if (crmContext) contextParts.push(crmContext);
   if (docContext) contextParts.push(docContext);
   const contextBlock = contextParts.length
     ? `\n\nDATA FROM INTERNAL SYSTEMS:\n${'─'.repeat(40)}\n${contextParts.join('\n\n')}\n${'─'.repeat(40)}`
     : '';
 
-  const system = `You are the Portfolio Intelligence Assistant for IIMA Ventures, an early-stage venture fund in India managing ~352 portfolio companies.
+  const system = `You are the Portfolio Intelligence Assistant for IIMA Ventures, an early-stage venture fund in India managing ~353 portfolio companies.
 
 You have access to multiple live data sources:
-- Affinity CRM: structured deal data (stake, IRR, valuation, investment date, owners)
-- Drive Documents: SSAs, SHAs, board notes, update reports, transaction docs
+- Portfolio Sheet: all 353 companies with investment data, valuations, IRR, status
+- Affinity CRM: per-company deal data (stake, owners, investment date)
+- Drive Documents: SSAs, SHAs, board notes, transaction docs
 - Gmail: portfolio company emails, founder communications
 - Slack: internal team conversations, deal notes
 - Web Search: news, public filings, market data
 
-When answering:
+When answering portfolio-wide questions:
+- Use the provided computed summary figures for totals
+- Portfolio value = stake% x last valuation (where available)
+- Weighted IRR = weight each IRR by investment amount
+- Be precise, format numbers in Cr/L as appropriate
+- Flag data quality issues (missing fields, inconsistent formats)
+
+When answering company-specific questions:
 - Be concise and analytical
 - Bold key metrics and numbers
-- If data conflicts across sources, flag it explicitly
-- Cite which source each data point came from
+- If data conflicts across sources, flag it
 - For stake questions, always check both CRM and transaction documents`;
 
   const messages = [
@@ -299,7 +345,7 @@ When answering:
   try {
     const body = {
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
+      max_tokens: 2000,
       system,
       messages
     };
