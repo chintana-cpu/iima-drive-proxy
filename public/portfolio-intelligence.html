@@ -201,12 +201,21 @@ function removeThinking() { const el = document.getElementById('thinking'); if (
 
 function findCompany(q) {
   const ql = q.toLowerCase();
+  // Tokenize query into whole words for strict matching
+  const queryWords = new Set(ql.match(/\b[a-z0-9]+\b/g) || []);
   let best = null, top = 0;
   for (const c of companies) {
     const name = (c.name || '').toLowerCase();
     let score = 0;
-    if (ql.includes(name)) score = name.length * 3;
-    else for (const w of name.split(/\s+/)) if (w.length > 2 && ql.includes(w)) score += w.length;
+    // Full name match in query (highest score)
+    if (ql.includes(name)) {
+      score = name.length * 3;
+    } else {
+      // Each word in company name must appear as a whole word in query
+      for (const w of name.split(/\s+/)) {
+        if (w.length > 2 && queryWords.has(w)) score += w.length;
+      }
+    }
     if (score > top) { top = score; best = c; }
   }
   return top >= 3 ? best : null;
