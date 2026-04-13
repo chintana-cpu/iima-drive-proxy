@@ -11,7 +11,7 @@ const KEEP_COLUMNS = [
 
 function parseCSV(text) {
   const lines = text.split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+  const headers = lines[0].split('	').map(h => h.replace(/"/g, '').trim());
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
@@ -21,7 +21,7 @@ function parseCSV(text) {
     let inQuotes = false;
     for (let j = 0; j < line.length; j++) {
       if (line[j] === '"') { inQuotes = !inQuotes; }
-      else if (line[j] === ',' && !inQuotes) { values.push(current.trim()); current = ''; }
+      else if (line[j] === '	' && !inQuotes) { values.push(current.trim()); current = ''; }
       else { current += line[j]; }
     }
     values.push(current.trim());
