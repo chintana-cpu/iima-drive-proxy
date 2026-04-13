@@ -89,8 +89,6 @@ header { display: flex; align-items: center; padding: 1rem 0 0.875rem; border-bo
     <span class="src-label">Sources</span>
     <div class="toggle on" data-src="affinity"><span class="dot"></span>Affinity CRM</div>
     <div class="toggle on" data-src="drive"><span class="dot"></span>Drive Docs</div>
-    <div class="toggle on" data-src="gmail"><span class="dot"></span>Gmail</div>
-    <div class="toggle on" data-src="slack"><span class="dot"></span>Slack</div>
     <div class="toggle on" data-src="web"><span class="dot"></span>Web</div>
   </div>
 
@@ -119,12 +117,9 @@ header { display: flex; align-items: center; padding: 1rem 0 0.875rem; border-bo
 
 <script>
 const VERCEL = 'https://iima-drive-proxy.vercel.app';
-const MCP_GMAIL = 'https://gmail.mcp.claude.com/mcp';
-const MCP_SLACK = 'https://mcp.slack.com/mcp';
-
 let companies = [];
 let history = [];
-let activeSources = new Set(['affinity','drive','gmail','slack','web']);
+let activeSources = new Set(['affinity','drive','web']);
 
 const feed = document.getElementById('feed');
 const msgInput = document.getElementById('msg-input');
@@ -203,6 +198,7 @@ function findCompany(q) {
   const ql = q.toLowerCase();
   // Tokenize query into whole words for strict matching
   const queryWords = new Set(ql.match(/\b[a-z0-9]+\b/g) || []);
+  const stopWords = new Set(['the','and','for','all','portfolio','companies','company','total','funds','raised','what','with','from','has','that','this','how','many','give','show','tell','list','across','about','its','our','their','which','where','when','does','did','are','was','were','have','been','will','can','get','per']);
   let best = null, top = 0;
   for (const c of companies) {
     const name = (c.name || '').toLowerCase();
@@ -211,9 +207,9 @@ function findCompany(q) {
     if (ql.includes(name)) {
       score = name.length * 3;
     } else {
-      // Each word in company name must appear as a whole word in query
+      // Each word in company name must appear as a whole word in query (not a stopword)
       for (const w of name.split(/\s+/)) {
-        if (w.length > 2 && queryWords.has(w)) score += w.length;
+        if (w.length > 2 && queryWords.has(w) && !stopWords.has(w)) score += w.length;
       }
     }
     if (score > top) { top = score; best = c; }
@@ -328,8 +324,6 @@ async function send() {
   setThinking('Querying intelligence sources');
 
   const mcpServers = [];
-  if (activeSources.has('gmail')) mcpServers.push({ type: 'url', url: MCP_GMAIL, name: 'gmail' });
-  if (activeSources.has('slack')) mcpServers.push({ type: 'url', url: MCP_SLACK, name: 'slack' });
 
   const tools = [];
   if (activeSources.has('web')) tools.push({ type: 'web_search_20250305', name: 'web_search' });
@@ -403,13 +397,6 @@ When answering company-specific questions:
     const textBlocks = data.content?.filter(b => b.type === 'text') || [];
     const answer = textBlocks.map(b => b.text).join('\n') || 'No response.';
 
-    const toolUses = data.content?.filter(b => b.type === 'mcp_tool_use') || [];
-    for (const t of toolUses) {
-      if (t.name?.includes('gmail') && !usedSources.some(s => s.includes('gmail')))
-        usedSources.push('<span class="src-badge gmail">Gmail</span>');
-      if (t.name?.includes('slack') && !usedSources.some(s => s.includes('slack')))
-        usedSources.push('<span class="src-badge slack">Slack</span>');
-    }
     if (data.content?.some(b => b.type === 'tool_use' && b.name === 'web_search'))
       usedSources.push('<span class="src-badge web">Web</span>');
 
