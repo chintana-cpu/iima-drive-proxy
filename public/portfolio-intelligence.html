@@ -257,14 +257,33 @@ async function send() {
           statusCount[s] = (statusCount[s] || 0) + 1;
         });
         const formatCr = n => n >= 1e7 ? `₹${(n/1e7).toFixed(2)} Cr` : n >= 1e5 ? `₹${(n/1e5).toFixed(2)} L` : `₹${n.toFixed(0)}`;
-        portfolioContext = `FULL PORTFOLIO DATA (${companies.length} companies):\n` +
-          `Total CIIE Invested+Grants: ${formatCr(totalInvested)}\n` +
-          `Total Portfolio Value (stake x last val): ${formatCr(totalPortfolioValue)}\n` +
-          `Total Follow-On Raised: ${formatCr(totalFollowOn)}\n` +
-          `Total Exit Amount: ${formatCr(totalExitAmount)}\n\n` +
-          `STATUS BREAKDOWN:\n${Object.entries(statusCount).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`${s}: ${n}`).join('\n')}\n\n` +
-          `ALL COMPANIES:\n` +
-          companies.map(c => `${c['Company Name']}|${c['Status']}|Inv:${c['CIIE Investment (INR)']}|Grant:${c['CIIE Grant (INR)']}|Stake:${c['Current Stake']}|LastVal:${c['Last Valuation (INR)']}|IRR:${c['IRR']}|Mult:${c['Multiplier']}|Exit:${c['Exit Amount (INR)']}|FollowOn:${c['Follow-On Raised (INR)']}|Date:${(c['Investment Date']||'').slice(0,10)}`).join('\n');
+        // Smart context: send summary + filtered/sampled companies
+        const q_lower = text.toLowerCase();
+        let relevantCompanies = companies;
+
+        // Filter by status if question mentions specific status
+        if (q_lower.includes('exit')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('exit'));
+        else if (q_lower.includes('written off') || q_lower.includes('writeoff')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('written'));
+        else if (q_lower.includes('struggling')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('struggling'));
+        else if (q_lower.includes('active')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('active'));
+        else if (q_lower.includes('passive')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('passive'));
+
+        // IRR questions: only companies with IRR data
+        if (q_lower.includes('irr')) relevantCompanies = companies.filter(c => c['IRR'] && c['IRR'] !== '' && c['IRR'] !== '0');
+
+        // Compute IRR stats for companies with IRR
+        const irrCompanies = companies.filter(c => c['IRR'] && c['IRR'] !== '' && !isNaN(parseFloat(c['IRR'])));
+        const avgIRR = irrCompanies.length ? (irrCompanies.reduce((s,c) => s + parseFloat(c['IRR']), 0) / irrCompanies.length).toFixed(2) : 'N/A';
+
+        portfolioContext = `PORTFOLIO SUMMARY (${companies.length} total companies):\n` +
+          `Total CIIE Invested + Grants: ${formatCr(totalInvested)}\n` +
+          `Estimated Portfolio Value (stake x last val): ${formatCr(totalPortfolioValue)}\n` +
+          `Total Follow-On Raised by Portfolio: ${formatCr(totalFollowOn)}\n` +
+          `Total Exit Amount Received: ${formatCr(totalExitAmount)}\n` +
+          `Average IRR (${irrCompanies.length} companies with data): ${avgIRR}%\n\n` +
+          `STATUS BREAKDOWN:\n${Object.entries(statusCount).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`- ${s}: ${n}`).join('\n')}\n\n` +
+          `RELEVANT COMPANIES (${relevantCompanies.length}):\n` +
+          relevantCompanies.slice(0, 150).map(c => `${c['Company Name']}|${c['Status']}|Inv:${c['CIIE Investment (INR)']}|Grant:${c['CIIE Grant (INR)']}|Stake:${c['Current Stake']}|LastVal:${c['Last Valuation (INR)']}|IRR:${c['IRR']}|Mult:${c['Multiplier']}|Exit:${c['Exit Amount (INR)']}|FollowOn:${c['Follow-On Raised (INR)']}`).join('\n');
         usedSources.push(`<span class="src-badge affinity">Portfolio (${companies.length})</span>`);
       }
     } catch(e) {}
