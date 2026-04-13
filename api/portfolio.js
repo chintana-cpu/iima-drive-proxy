@@ -1,5 +1,5 @@
 const SHEET_ID = '1ILNj-fx6F87RqyAcifxrUIaRTipnrg7ByUuXbihAzPI';
-const SHEET_NAME = 'Portfolio';
+const GID = '950821764';
 
 const KEEP_COLUMNS = [
   'Company Name', 'Legal Name', 'Status', 'Investment Date',
@@ -28,12 +28,18 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=3600');
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
-    const r = await fetch(url);
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      redirect: 'follow'
+    });
     if (!r.ok) throw new Error(`Sheet fetch failed: ${r.status}`);
     const text = await r.text();
+    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+      throw new Error('Got HTML instead of CSV - sheet may require auth');
+    }
     const companies = parseTSV(text);
-    res.json({ count: companies.length, companies });
+    res.json({ count: companies.length, companies, debug_first_line: text.split('\n')[0].slice(0, 200) });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
