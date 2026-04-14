@@ -333,7 +333,7 @@ async function send() {
       const docNames = d.all_docs || [];
       const docContent = d.content || '';
       if (docNames.length || docContent) {
-        docContext = `DRIVE DOCUMENTS — ${company.name} (${docNames.length} docs found):\nActive document: ${d.document || 'unknown'}\n\n` + docContent.slice(0, 25000);
+        docContext = `DRIVE DOCUMENTS — ${company.name} (${docNames.length} docs found):\nActive document: ${d.document || 'unknown'}\n\n` + docContent.slice(0, 40000);
         usedSources.push(`<span class="src-badge drive">Drive (${docNames.length})</span>`);
       }
     } catch(e) {}
