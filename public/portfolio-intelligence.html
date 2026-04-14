@@ -196,25 +196,44 @@ function removeThinking() { const el = document.getElementById('thinking'); if (
 
 function findCompany(q) {
   const ql = q.toLowerCase();
-  // Tokenize query into whole words for strict matching
-  const queryWords = new Set(ql.match(/\b[a-z0-9]+\b/g) || []);
-  const stopWords = new Set(['the','and','for','all','portfolio','companies','company','total','funds','raised','what','with','from','has','that','this','how','many','give','show','tell','list','across','about','its','our','their','which','where','when','does','did','are','was','were','have','been','will','can','get','per']);
+  const queryWords = Array.from(ql.match(/\b[a-z0-9]+\b/g) || []);
+  const queryWordSet = new Set(queryWords);
+  // Concatenated query — helps match "nabh dristhi" → "nabhdristhi"
+  const queryConcat = queryWords.join('');
+  const stopWords = new Set(['the','and','for','all','portfolio','companies','company','total','funds','raised','what','with','from','has','that','this','how','many','give','show','tell','list','across','about','its','our','their','which','where','when','does','did','are','was','were','have','been','will','can','get','per','latest','stake','ciie','per','transaction','documents','current','recent']);
   let best = null, top = 0;
   for (const c of companies) {
     const name = (c.name || '').toLowerCase();
+    const nameNoSpace = name.replace(/\s+/g, '');
     let score = 0;
-    // Full name match in query (highest score)
+    // 1. Full name match in query (highest score)
     if (ql.includes(name)) {
       score = name.length * 3;
-    } else {
-      // Each word in company name must appear as a whole word in query (not a stopword)
+    }
+    // 2. Concatenated name matches concatenated query words
+    else if (nameNoSpace.length > 3 && queryConcat.includes(nameNoSpace)) {
+      score = nameNoSpace.length * 2;
+    }
+    // 3. Concatenated query matches name without spaces
+    else if (nameNoSpace.length > 3 && nameNoSpace.includes(queryConcat) && queryConcat.length > 3) {
+      score = queryConcat.length * 2;
+    }
+    else {
+      // 4. Word-by-word match (non-stopwords only)
       for (const w of name.split(/\s+/)) {
-        if (w.length > 2 && queryWords.has(w) && !stopWords.has(w)) score += w.length;
+        if (w.length > 2 && queryWordSet.has(w) && !stopWords.has(w)) score += w.length;
+      }
+      // 5. Partial word match — query word starts with or is contained in name word
+      for (const qw of queryWords) {
+        if (qw.length < 4 || stopWords.has(qw)) continue;
+        for (const nw of name.split(/\s+/)) {
+          if (nw.length > 3 && (nw.startsWith(qw) || qw.startsWith(nw))) score += Math.min(qw.length, nw.length);
+        }
       }
     }
     if (score > top) { top = score; best = c; }
   }
-  return top >= 3 ? best : null;
+  return top >= 4 ? best : null;
 }
 
 async function send() {
