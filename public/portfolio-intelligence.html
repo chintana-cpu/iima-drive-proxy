@@ -328,7 +328,9 @@ async function send() {
   if (activeSources.has('drive') && company) {
     setThinking(`Fetching Drive docs for ${company.name}`);
     try {
-      const r = await fetch(`${VERCEL}/api/docs?company=${encodeURIComponent(company.name)}&query=${encodeURIComponent(text)}`);
+      const docTypeMatch = text.match(/\b(sha|ssa|mis|cap table|valuation|deck|mou|nda|due diligence|ic memo|term sheet)\b/i);
+      const docQuery = docTypeMatch ? docTypeMatch[1] : 'ssa';
+      const r = await fetch(`${VERCEL}/api/docs?company=${encodeURIComponent(company.name)}&query=${encodeURIComponent(docQuery)}`);
       const d = await r.json();
       const docNames = d.all_docs || [];
       const docContent = d.content || '';
