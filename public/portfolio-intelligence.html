@@ -84,14 +84,14 @@ header { display: flex; align-items: center; padding: 1rem 0 0.875rem; border-bo
       </div>
     </div>
   </header>
-
+ 
   <div id="sources-bar">
     <span class="src-label">Sources</span>
     <div class="toggle on" data-src="affinity"><span class="dot"></span>Affinity CRM</div>
     <div class="toggle on" data-src="drive"><span class="dot"></span>Drive Docs</div>
     <div class="toggle on" data-src="web"><span class="dot"></span>Web</div>
   </div>
-
+ 
   <div id="feed">
     <div class="welcome">
       <div class="welcome-head">What do you want to know?</div>
@@ -105,7 +105,7 @@ header { display: flex; align-items: center; padding: 1rem 0 0.875rem; border-bo
       </div>
     </div>
   </div>
-
+ 
   <div id="input-area">
     <div id="input-row">
       <textarea id="msg-input" rows="1" placeholder="Ask about any portfolio company…"></textarea>
@@ -114,21 +114,21 @@ header { display: flex; align-items: center; padding: 1rem 0 0.875rem; border-bo
     <div id="hint">Enter to send · Shift+Enter for new line</div>
   </div>
 </div>
-
+ 
 <script>
 const VERCEL = 'https://iima-drive-proxy.vercel.app';
 let companies = [];
 let history = [];
 let activeSources = new Set(['affinity','drive','web']);
-
+ 
 const feed = document.getElementById('feed');
 const msgInput = document.getElementById('msg-input');
 const sendBtn = document.getElementById('send-btn');
-
+ 
 fetch(`${VERCEL}/api/affinity`).then(r => r.json()).then(d => {
   companies = Array.isArray(d) ? d : (d.organizations || d.companies || []);
 }).catch(() => {});
-
+ 
 document.querySelectorAll('.toggle').forEach(el => {
   el.addEventListener('click', () => {
     const s = el.dataset.src;
@@ -136,14 +136,14 @@ document.querySelectorAll('.toggle').forEach(el => {
     else { activeSources.add(s); el.classList.add('on'); }
   });
 });
-
+ 
 msgInput.addEventListener('input', () => {
   msgInput.style.height = 'auto';
   msgInput.style.height = Math.min(msgInput.scrollHeight, 130) + 'px';
 });
 msgInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
 sendBtn.addEventListener('click', send);
-
+ 
 function prefill(t) { msgInput.value = t; msgInput.focus(); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function md(s) {
@@ -153,7 +153,7 @@ function md(s) {
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\n/g, '<br>');
 }
-
+ 
 function addMsg(role, html, sources) {
   const wrap = document.createElement('div');
   wrap.className = `msg ${role}`;
@@ -174,7 +174,7 @@ function addMsg(role, html, sources) {
   feed.appendChild(wrap);
   feed.scrollTop = feed.scrollHeight;
 }
-
+ 
 function addErr(text) {
   const d = document.createElement('div');
   d.className = 'err-box';
@@ -182,7 +182,7 @@ function addErr(text) {
   feed.appendChild(d);
   feed.scrollTop = feed.scrollHeight;
 }
-
+ 
 function setThinking(t) {
   removeThinking();
   const d = document.createElement('div');
@@ -193,7 +193,7 @@ function setThinking(t) {
   feed.scrollTop = feed.scrollHeight;
 }
 function removeThinking() { const el = document.getElementById('thinking'); if (el) el.remove(); }
-
+ 
 function findCompany(q) {
   const ql = q.toLowerCase();
   const queryWords = Array.from(ql.match(/\b[a-z0-9]+\b/g) || []);
@@ -235,29 +235,29 @@ function findCompany(q) {
   }
   return top >= 4 ? best : null;
 }
-
+ 
 async function send() {
   const text = msgInput.value.trim();
   if (!text) return;
-
+ 
   const w = feed.querySelector('.welcome');
   if (w) w.remove();
-
+ 
   msgInput.value = '';
   msgInput.style.height = 'auto';
   sendBtn.disabled = true;
   msgInput.disabled = true;
-
+ 
   addMsg('user', esc(text));
   history.push({ role: 'user', content: text });
-
+ 
   const company = findCompany(text);
   let crmContext = '', docContext = '', portfolioContext = '';
   let usedSources = [];
-
+ 
   const portfolioKeywords = /\b(total|all|portfolio|across|how many|count|sum|average|weighted|irr|breakdown|status|exited|written.?off|struggling|active|passive|overview|analysis|aggregate|list all|which companies)\b/i;
   const isPortfolioWide = portfolioKeywords.test(text) && !company;
-
+ 
   if (activeSources.has('affinity') && isPortfolioWide) {
     setThinking('Loading full portfolio data...');
     try {
@@ -284,21 +284,21 @@ async function send() {
         // Smart context: send summary + filtered/sampled companies
         const q_lower = text.toLowerCase();
         let relevantCompanies = companies;
-
+ 
         // Filter by status if question mentions specific status
         if (q_lower.includes('exit')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('exit'));
         else if (q_lower.includes('written off') || q_lower.includes('writeoff')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('written'));
         else if (q_lower.includes('struggling')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('struggling'));
         else if (q_lower.includes('active')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('active'));
         else if (q_lower.includes('passive')) relevantCompanies = companies.filter(c => (c['Status']||'').toLowerCase().includes('passive'));
-
+ 
         // IRR questions: only companies with IRR data
         if (q_lower.includes('irr')) relevantCompanies = companies.filter(c => c['IRR'] && c['IRR'] !== '' && c['IRR'] !== '0');
-
+ 
         // Compute IRR stats for companies with IRR
         const irrCompanies = companies.filter(c => c['IRR'] && c['IRR'] !== '' && !isNaN(parseFloat(c['IRR'])));
         const avgIRR = irrCompanies.length ? (irrCompanies.reduce((s,c) => s + parseFloat(c['IRR']), 0) / irrCompanies.length).toFixed(2) : 'N/A';
-
+ 
         portfolioContext = `PORTFOLIO SUMMARY (${companies.length} total companies):\n` +
           `Total CIIE Invested + Grants: ${formatCr(totalInvested)}\n` +
           `Estimated Portfolio Value (stake x last val): ${formatCr(totalPortfolioValue)}\n` +
@@ -311,7 +311,7 @@ async function send() {
         usedSources.push(`<span class="src-badge affinity">Portfolio (${companies.length})</span>`);
       }
     } catch(e) {}
-
+ 
   } else if (activeSources.has('affinity') && company) {
     setThinking(`Fetching CRM data for ${company.name}`);
     try {
@@ -324,7 +324,7 @@ async function send() {
       }
     } catch(e) {}
   }
-
+ 
   if (activeSources.has('drive') && company) {
     setThinking(`Fetching Drive docs for ${company.name}`);
     try {
@@ -340,15 +340,15 @@ async function send() {
       }
     } catch(e) {}
   }
-
+ 
   removeThinking();
   setThinking('Querying intelligence sources');
-
+ 
   const mcpServers = [];
-
+ 
   const tools = [];
   if (activeSources.has('web')) tools.push({ type: 'web_search_20250305', name: 'web_search' });
-
+ 
   const contextParts = [];
   if (portfolioContext) contextParts.push(portfolioContext);
   if (crmContext) contextParts.push(crmContext);
@@ -356,9 +356,9 @@ async function send() {
   const contextBlock = contextParts.length
     ? `\n\nDATA FROM INTERNAL SYSTEMS:\n${'─'.repeat(40)}\n${contextParts.join('\n\n')}\n${'─'.repeat(40)}`
     : '';
-
+ 
   const system = `You are the Portfolio Intelligence Assistant for IIMA Ventures, an early-stage venture fund in India managing ~353 portfolio companies.
-
+ 
 You have access to multiple live data sources:
 - Portfolio Sheet: all 353 companies with investment data, valuations, IRR, status
 - Affinity CRM: per-company deal data (stake, owners, investment date)
@@ -366,25 +366,25 @@ You have access to multiple live data sources:
 - Gmail: portfolio company emails, founder communications
 - Slack: internal team conversations, deal notes
 - Web Search: news, public filings, market data
-
+ 
 When answering portfolio-wide questions:
 - Use the provided computed summary figures for totals
 - Portfolio value = stake% x last valuation (where available)
 - Weighted IRR = weight each IRR by investment amount
 - Be precise, format numbers in Cr/L as appropriate
 - Flag data quality issues (missing fields, inconsistent formats)
-
+ 
 When answering company-specific questions:
 - Be concise and analytical
 - Bold key metrics and numbers
 - If data conflicts across sources, flag it
 - For stake questions, always check both CRM and transaction documents`;
-
+ 
   const messages = [
     ...history.slice(-8, -1),
     { role: 'user', content: text + contextBlock }
   ];
-
+ 
   try {
     const body = {
       model: 'claude-sonnet-4-20250514',
@@ -394,13 +394,13 @@ When answering company-specific questions:
     };
     if (mcpServers.length) body.mcp_servers = mcpServers;
     if (tools.length) body.tools = tools;
-
+ 
     const resp = await fetch('https://iima-drive-proxy.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-
+ 
     const raw = await resp.text();
     let data;
     try { data = JSON.parse(raw); } catch(e) {
@@ -408,31 +408,31 @@ When answering company-specific questions:
       addErr(`Parse error:\n${raw.slice(0, 600)}`);
       reset(); return;
     }
-
+ 
     if (!resp.ok || data.error) {
       removeThinking();
       addErr(`API ${resp.status}: ${JSON.stringify(data.error || data, null, 2).slice(0, 600)}`);
       reset(); return;
     }
-
+ 
     const textBlocks = data.content?.filter(b => b.type === 'text') || [];
     const answer = textBlocks.map(b => b.text).join('\n') || 'No response.';
-
+ 
     if (data.content?.some(b => b.type === 'tool_use' && b.name === 'web_search'))
       usedSources.push('<span class="src-badge web">Web</span>');
-
+ 
     removeThinking();
     addMsg('bot', md(answer), usedSources.length ? usedSources.join('') : null);
     history.push({ role: 'assistant', content: answer });
-
+ 
   } catch(e) {
     removeThinking();
     addErr(`Fetch failed: ${e.message}`);
   }
-
+ 
   reset();
 }
-
+ 
 function reset() {
   sendBtn.disabled = false;
   msgInput.disabled = false;
