@@ -120,6 +120,7 @@ const VERCEL = 'https://iima-drive-proxy.vercel.app';
 let companies = [];
 let history = [];
 let activeSources = new Set(['affinity','drive','web']);
+let lastCompany = null;
  
 const feed = document.getElementById('feed');
 const msgInput = document.getElementById('msg-input');
@@ -292,13 +293,14 @@ async function send() {
   addMsg('user', esc(text));
   history.push({ role: 'user', content: text });
  
-  const company = findCompany(text);
+  const detectedCompany = findCompany(text);
+  const portfolioKeywords = /\b(total|all|portfolio|across|how many|count|sum|average|weighted|irr|breakdown|status|exited|written.?off|struggling|active|passive|overview|analysis|aggregate|list all|which companies)\b/i;
+  const isPortfolioWide = portfolioKeywords.test(text) && !detectedCompany;
+  const company = detectedCompany || (!isPortfolioWide ? lastCompany : null);
+  if (detectedCompany) lastCompany = detectedCompany;
   let crmContext = '', docContext = '', portfolioContext = '';
   let usedSources = [];
- 
-  const portfolioKeywords = /\b(total|all|portfolio|across|how many|count|sum|average|weighted|irr|breakdown|status|exited|written.?off|struggling|active|passive|overview|analysis|aggregate|list all|which companies)\b/i;
-  const isPortfolioWide = portfolioKeywords.test(text) && !company;
- 
+  
   if (activeSources.has('affinity') && isPortfolioWide) {
     setThinking('Loading full portfolio data...');
     try {
@@ -369,8 +371,9 @@ async function send() {
   if (activeSources.has('drive') && company) {
     setThinking(`Fetching Drive docs for ${company.name}`);
     try {
+      const stakeKeywords = /\b(stake|equity|shareholding|dilut|ownership|percent|cap table)\b/i;
       const docTypeMatch = text.match(/\b(sha|ssa|mis|cap table|valuation|deck|mou|nda|due diligence|ic memo|term sheet)\b/i);
-      const docQuery = docTypeMatch ? docTypeMatch[1] : 'ssa';
+      const docQuery = docTypeMatch ? docTypeMatch[1] : stakeKeywords.test(text) ? 'sha' : 'sha';
       const r = await fetch(`${VERCEL}/api/docs?company=${encodeURIComponent(company.name)}&query=${encodeURIComponent(docQuery)}`);
       const d = await r.json();
       const docNames = d.all_docs || [];
