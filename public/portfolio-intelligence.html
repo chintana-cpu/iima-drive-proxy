@@ -250,8 +250,9 @@ function findCompany(q) {
       score = name.length * 4;
     }
     // Level 2 — concatenated meaningful query words contain name without spaces
-    else if (nameNoSpace.length > 4 && queryConcat.includes(nameNoSpace)) {
-      score = nameNoSpace.length * 3;
+    else if (nameNoSpace.length > 4 && queryConcat.length > 4 && 
+  (queryConcat.includes(nameNoSpace) || nameNoSpace.includes(queryConcat))) {
+  score = Math.min(nameNoSpace.length, queryConcat.length) * 3;
     }
     // Level 3 — word by word exact match only, no partial, no fuzzy
     else {
