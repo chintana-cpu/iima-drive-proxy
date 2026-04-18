@@ -415,6 +415,8 @@ if (capTableContext) contextParts.push(capTableContext);
 if (portfolioContext) contextParts.push(portfolioContext);
 if (crmContext) contextParts.push(crmContext);
 if (docContext) contextParts.push(docContext);
+  const contextBlock = contextParts.length
+    ? `\n\nDATA FROM INTERNAL SYSTEMS:\n${'─'.repeat(40)}\n${contextParts.join('\n\n')}\n${'─'.repeat(40)}`
     : '';
  
   const system = `You are the Portfolio Intelligence Assistant for IIMA Ventures, an early-stage venture fund in India managing ~353 portfolio companies.
