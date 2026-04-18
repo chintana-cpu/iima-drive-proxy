@@ -367,7 +367,24 @@ async function send() {
       }
     } catch(e) {}
   }
- 
+ // Cap Table lookup — highest priority for stake questions
+let capTableContext = '';
+const isStakeQuestion = /\b(stake|equity|shareholding|ownership|cap table|captable|dilut|percent|how much|own)\b/i.test(text);
+if (isStakeQuestion && company) {
+  try {
+    const ctUrl = `${VERCEL}/api/captable?company=${encodeURIComponent(company.name)}&shareholder=ciie`;
+    const ctR = await fetch(ctUrl);
+    const ctD = await ctR.json();
+    if (ctD.rows && ctD.rows.length > 0) {
+      capTableContext = `CAP TABLE DATA (extracted from SHA — high confidence):\n` +
+        `Company: ${company.name}\n` +
+        ctD.rows.map(r => 
+          `${r['Shareholder']}: ${r['Shares']} shares | ${r['Stake %']} | ${r['Instrument']} | ${r['Closing Type']} | SHA dated ${r['SHA Date']}`
+        ).join('\n');
+      usedSources.push('<span class="src-badge affinity">Cap Table</span>');
+    }
+  } catch(e) {}
+}
   if (activeSources.has('drive') && company) {
     setThinking(`Fetching Drive docs for ${company.name}`);
     try {
@@ -394,11 +411,10 @@ async function send() {
   if (activeSources.has('web')) tools.push({ type: 'web_search_20250305', name: 'web_search' });
  
   const contextParts = [];
-  if (portfolioContext) contextParts.push(portfolioContext);
-  if (crmContext) contextParts.push(crmContext);
-  if (docContext) contextParts.push(docContext);
-  const contextBlock = contextParts.length
-    ? `\n\nDATA FROM INTERNAL SYSTEMS:\n${'─'.repeat(40)}\n${contextParts.join('\n\n')}\n${'─'.repeat(40)}`
+if (capTableContext) contextParts.push(capTableContext);
+if (portfolioContext) contextParts.push(portfolioContext);
+if (crmContext) contextParts.push(crmContext);
+if (docContext) contextParts.push(docContext);
     : '';
  
   const system = `You are the Portfolio Intelligence Assistant for IIMA Ventures, an early-stage venture fund in India managing ~353 portfolio companies.
