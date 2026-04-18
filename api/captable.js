@@ -1,4 +1,4 @@
-const SHEET_ID = '1tP0RrRQrZtZHah7FM9MMFf7COQDWSQ89sKjF3MPD2
+const SHEET_ID = '1tP0RrRQrZtZHah7FM9MMFf7COQDWSQ89sKjF3MPD2vs';
 const GID = '0';     // first sheet tab
 
 export default async function handler(req, res) {
