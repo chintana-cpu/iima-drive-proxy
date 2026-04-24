@@ -132,7 +132,7 @@
   }
 
   function formatFieldValue(name, val) {
-    const numberFields = ['CIIE Investment (INR)','Post Money Valuation','CIIE Grant (INR)','Exit Amount','Follow-On Raised (INR)'];
+    const numberFields = ['CIIE Investment (INR)','Post Money Valuation','CIIE Grant (INR)','Exit Amount','Follow-On Raised (INR)','Last Valuation (INR)'];
     const percentFields = ['IRR','Multiplier','Current Stake'];
     if (numberFields.includes(name)) return { display: formatNumber(val), cls: 'number' };
     if (percentFields.includes(name)) return { display: val + (name === 'IRR' ? '%' : 'x'), cls: 'number' };
